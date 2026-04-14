@@ -82,7 +82,7 @@ function calcMat(d) {
 
 // ── PDF extraction via Claude API ─────────────────────────────────
 async function extractFromPdf(base64, mediaType) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
+  const r = await fetch("/api/claude", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514", max_tokens: 4000,
@@ -101,7 +101,7 @@ Beträge Ganzzahlen CHF. Aufwand negativ. Eigenkapital in liabilities. prior weg
 
 // ── AI Company Research via Claude API + Web Search ───────────────
 async function researchCompany(companyName, website) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
+  const r = await fetch("/api/claude", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514", max_tokens: 3000,
@@ -150,7 +150,7 @@ async function assessRisks(companyName, understanding, financialData) {
   
   const areaNames = Object.entries(AREAS).map(([k, a]) => `"${k}": "${a.n}"`).join(", ");
   
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
+  const r = await fetch("/api/claude", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "claude-sonnet-4-20250514", max_tokens: 4000,
