@@ -348,7 +348,7 @@ function MandantenScreen({ mandanten, onCreate, onSelect, onSettings, user }) {
           <div key={i} onClick={() => onSelect(m)} style={{ ...crd(), cursor: "pointer", marginBottom: 0, transition: "border-color .15s" }} onMouseEnter={e => e.currentTarget.style.borderColor = S.blue} onMouseLeave={e => e.currentTarget.style.borderColor = S.border}>
             <div style={{ fontSize: 15, fontWeight: 600, color: S.slate }}>{m.name}</div>
             <div style={{ fontSize: 12, color: S.muted, marginTop: 2 }}>{m.website || "–"}</div>
-            <div style={{ fontSize: 11, color: S.hint, marginTop: 8 }}>{m.years?.length || 0} Jahr(e) · Mandatsleiter: {m.mandatsleiter || "–"}</div>
+            <div style={{ fontSize: 11, color: S.hint, marginTop: 8 }}>{m.years?.length || 0} Jahr(e) · Mandatsleiter: {m.mandatsleiter_email || "–"}</div>
           </div>
         ))}
       </div>
@@ -374,7 +374,7 @@ function JahreScreen({ mandant, onBack, onSelectYear, onCreateYear }) {
         <div style={{ display: "flex", gap: 10, alignItems: "end" }}>
           <div><div style={lbl()}>Geschäftsjahr</div><input value={newYear} onChange={e => setNewYear(e.target.value)} style={{ ...inp(), width: 100 }} /></div>
           <div style={{ flex: 1 }}><div style={lbl()}>Art des Auftrags</div><select value={newType} onChange={e => setNewType(e.target.value)} style={inp()}><option>Eingeschränkte Revision nach Art. 729 ff. OR</option><option>Eingeschränkte Revision nach Art. 727a OR</option><option>Freiwillige eingeschränkte Revision</option></select></div>
-          <button onClick={() => onCreateYear({ year: newYear, type: newType, status: "in Bearbeitung", step: 0 })} style={btnSm()}>Anlegen</button>
+          <button onClick={() => onCreateYear({ year: newYear, type: newType })} style={btnSm()}>Anlegen</button>
         </div>
       </div>
       <div style={{ ...secT(), marginTop: 20 }}>Revisionsjahre</div>
@@ -383,11 +383,11 @@ function JahreScreen({ mandant, onBack, onSelectYear, onCreateYear }) {
         <div key={i} onClick={() => onSelectYear(y)} style={{ ...crd(), cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }} onMouseEnter={e => e.currentTarget.style.borderColor = S.blue} onMouseLeave={e => e.currentTarget.style.borderColor = S.border}>
           <div>
             <span style={{ fontSize: 16, fontWeight: 700, color: S.slate }}>GJ {y.year}</span>
-            <span style={{ fontSize: 12, color: S.muted, marginLeft: 12 }}>{y.type}</span>
+            <span style={{ fontSize: 12, color: S.muted, marginLeft: 12 }}>{y.audit_type || y.type}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ padding: "3px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: y.status === "abgeschlossen" ? S.greenL : y.status === "archiviert" ? "#f1f5f9" : S.blueL, color: y.status === "abgeschlossen" ? S.green : y.status === "archiviert" ? S.hint : S.blue }}>{y.status}</span>
-            <span style={{ fontSize: 12, color: S.hint }}>Schritt {(y.step || 0) + 1}/8</span>
+            <span style={{ padding: "3px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: y.status === "abgeschlossen" ? S.greenL : y.status === "archiviert" ? "#f1f5f9" : S.blueL, color: y.status === "abgeschlossen" ? S.green : y.status === "archiviert" ? S.hint : S.blue }}>{y.status?.replace("_", " ") || "in Bearbeitung"}</span>
+            <span style={{ fontSize: 12, color: S.hint }}>Schritt {(y.current_step || y.step || 0) + 1}/8</span>
           </div>
         </div>
       ))}
@@ -396,9 +396,9 @@ function JahreScreen({ mandant, onBack, onSelectYear, onCreateYear }) {
 }
 
 // ── Settings ──────────────────────────────────────────────────────
-function SettingsScreen({ onBack, mandant, onUpdate }) {
+function SettingsScreen({ onBack, mandant, onUpdate, onInvite }) {
   const [inviteEmail, setInviteEmail] = useState("");
-  const [ml, setMl] = useState(mandant?.mandatsleiter || "");
+  const [ml, setMl] = useState(mandant?.mandatsleiter_email || mandant?.mandatsleiter || "");
   const team = mandant?.team || [];
   return (
     <div style={{ maxWidth: 600 }}>
@@ -409,14 +409,14 @@ function SettingsScreen({ onBack, mandant, onUpdate }) {
           <div style={{ fontSize: 12, color: S.muted, marginBottom: 8 }}>Erhält Hilferuf-Benachrichtigungen per E-Mail.</div>
           <div style={{ display: "flex", gap: 8 }}>
             <input value={ml} onChange={e => setMl(e.target.value)} placeholder="revisor@kanzlei.ch" style={{ ...inp(), flex: 1 }} />
-            <button onClick={() => onUpdate({ ...mandant, mandatsleiter: ml })} style={btnSm()}>Speichern</button>
+            <button onClick={() => onUpdate({ ...mandant, mandatsleiter_email: ml })} style={btnSm()}>Speichern</button>
           </div>
         </Card>
         <Card title="Team einladen">
           <div style={{ fontSize: 12, color: S.muted, marginBottom: 8 }}>Mitarbeitende einladen, die an diesem Mandat arbeiten.</div>
           <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
             <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="assistent@kanzlei.ch" style={{ ...inp(), flex: 1 }} />
-            <button onClick={() => { if (inviteEmail.includes("@")) { onUpdate({ ...mandant, team: [...team, { email: inviteEmail, role: "Assistent" }] }); setInviteEmail(""); } }} style={btnSm()}>Einladen</button>
+            <button onClick={() => { if (inviteEmail.includes("@") && onInvite) { onInvite(inviteEmail); setInviteEmail(""); } }} style={btnSm()}>Einladen</button>
           </div>
           {team.map((t, i) => (
             <div key={i} style={{ padding: "8px 0", borderBottom: `1px solid ${S.border}`, display: "flex", justifyContent: "space-between", fontSize: 13 }}>
@@ -982,25 +982,111 @@ ${Object.entries(OVERALL).map(([k,s]) => `<h2>${s.t}</h2><table><tbody>${s.items
 // ═══════════════════════════════════════════════════════════════════
 // APP ROOT
 // ═══════════════════════════════════════════════════════════════════
-export default function Revisionsassistent({ user, onLogout }) {
+import { supabase } from './supabase.js'
+
+export default function Revisionsassistent({ user, userId, onLogout }) {
   const [mandanten, setMandanten] = useState([]);
   const [view, setView] = useState("mandanten");
   const [selMandant, setSelMandant] = useState(null);
   const [selYear, setSelYear] = useState(null);
   const [settingsMandant, setSettingsMandant] = useState(null);
+  const [dbLoading, setDbLoading] = useState(true);
+
+  // Load mandanten from Supabase on mount
+  useEffect(() => {
+    loadMandanten();
+  }, []);
+
+  const loadMandanten = async () => {
+    setDbLoading(true);
+    const { data, error } = await supabase
+      .from('mandanten')
+      .select('*, team_members(*), revision_years(*)')
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      setMandanten(data.map(m => ({
+        ...m,
+        years: m.revision_years || [],
+        team: m.team_members || [],
+      })));
+    }
+    setDbLoading(false);
+  };
+
+  const createMandant = async (m) => {
+    const { data, error } = await supabase
+      .from('mandanten')
+      .insert({ owner_id: userId, name: m.name, website: m.website })
+      .select()
+      .single();
+    if (!error && data) {
+      setMandanten(prev => [{ ...data, years: [], team: [] }, ...prev]);
+    } else if (error) {
+      alert('Fehler: ' + error.message);
+    }
+  };
+
+  const updateMandant = async (updated) => {
+    const { error } = await supabase
+      .from('mandanten')
+      .update({ 
+        name: updated.name, 
+        website: updated.website, 
+        mandatsleiter_email: updated.mandatsleiter_email || updated.mandatsleiter,
+        company_info: updated.company_info 
+      })
+      .eq('id', updated.id);
+    if (!error) {
+      setMandanten(prev => prev.map(m => m.id === updated.id ? { ...m, ...updated } : m));
+      if (selMandant?.id === updated.id) setSelMandant(prev => ({ ...prev, ...updated }));
+    }
+  };
+
+  const createYear = async (mandantId, y) => {
+    const { data, error } = await supabase
+      .from('revision_years')
+      .insert({ mandant_id: mandantId, year: y.year, audit_type: y.type })
+      .select()
+      .single();
+    if (!error && data) {
+      const updated = mandanten.map(m => 
+        m.id === mandantId ? { ...m, years: [...(m.years || []), { ...data, status: data.status || 'in_bearbeitung' }] } : m
+      );
+      setMandanten(updated);
+      const sel = updated.find(m => m.id === mandantId);
+      if (sel) setSelMandant(sel);
+    }
+  };
+
+  const inviteTeamMember = async (mandantId, email) => {
+    const { data, error } = await supabase
+      .from('team_members')
+      .insert({ mandant_id: mandantId, email, role: 'assistent', invited_by: userId })
+      .select()
+      .single();
+    if (!error && data) {
+      const updated = mandanten.map(m =>
+        m.id === mandantId ? { ...m, team: [...(m.team || []), data] } : m
+      );
+      setMandanten(updated);
+      const sel = updated.find(m => m.id === mandantId);
+      if (sel) { setSelMandant(sel); setSettingsMandant(sel); }
+    }
+  };
 
   const header = (
     <header style={{ background: S.dark, padding: "0 24px", display: "flex", alignItems: "center", height: 52, position: "sticky", top: 0, zIndex: 100 }}>
       <div onClick={() => { setView("mandanten"); setSelMandant(null); setSelYear(null); }} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-        <div style={{ width: 24, height: 24, background: "linear-gradient(135deg,#3b82f6,#1d4ed8)", borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "white", fontWeight: 700 }}>R</div>
+        <div style={{ width: 24, height: 24, background: "linear-gradient(135deg,#7c3aed,#a855f7)", borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "white", fontWeight: 700 }}>R</div>
         <span style={{ color: "#f8fafc", fontSize: 14, fontWeight: 600 }}>Revisionsassistent</span>
       </div>
       <span style={{ marginLeft: "auto", color: S.muted, fontSize: 12 }}>{user}</span>
+      <button onClick={onLogout} style={{ marginLeft: 12, padding: "5px 12px", background: "transparent", color: S.hint, border: `1px solid ${S.muted}`, borderRadius: 4, fontSize: 11, cursor: "pointer", fontFamily: S.font }}>Logout</button>
     </header>
   );
 
   const handleHilferuf = () => {
-    const ml = selMandant?.mandatsleiter;
+    const ml = selMandant?.mandatsleiter_email;
     if (ml) {
       alert(`Hilferuf gesendet an ${ml}!\n\nE-Mail wird generiert:\n\n«Guten Tag,\n\nBeim Mandat ${selMandant.name} (GJ ${selYear?.year}) benötigt der Revisionsassistent Ihre Unterstützung.\n\nBitte prüfen Sie den aktuellen Stand im Revisionsassistenten.\n\nFreundliche Grüsse»`);
     } else {
@@ -1014,21 +1100,25 @@ export default function Revisionsassistent({ user, onLogout }) {
       {view !== "workflow" && header}
 
       {view === "mandanten" && <div style={{ padding: "24px 32px", maxWidth: 900, margin: "0 auto" }}>
-        <MandantenScreen mandanten={mandanten} user={user}
-          onCreate={m => setMandanten(p => [...p, { ...m, years: [], team: [] }])}
-          onSelect={m => { setSelMandant(m); setView("jahre"); }}
-          onSettings={() => setView("settings")}
-        />
+        {dbLoading ? (
+          <div style={{ textAlign: "center", padding: 60 }}>
+            <div style={{ width: 36, height: 36, border: "3px solid #e2e8f0", borderTopColor: "#7c3aed", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto 12px" }} />
+            <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+            <div style={{ color: S.muted, fontSize: 14 }}>Mandanten werden geladen...</div>
+          </div>
+        ) : (
+          <MandantenScreen mandanten={mandanten} user={user}
+            onCreate={createMandant}
+            onSelect={m => { setSelMandant(m); setView("jahre"); }}
+            onSettings={() => setView("settings")}
+          />
+        )}
       </div>}
 
       {view === "jahre" && selMandant && <div style={{ padding: "24px 32px", maxWidth: 900, margin: "0 auto" }}>
         <JahreScreen mandant={selMandant}
-          onBack={() => { setView("mandanten"); setSelMandant(null); }}
-          onCreateYear={y => {
-            const updated = { ...selMandant, years: [...(selMandant.years || []), y] };
-            setMandanten(p => p.map(m => m.name === selMandant.name ? updated : m));
-            setSelMandant(updated);
-          }}
+          onBack={() => { setView("mandanten"); setSelMandant(null); loadMandanten(); }}
+          onCreateYear={y => createYear(selMandant.id, y)}
           onSelectYear={y => { setSelYear(y); setView("workflow"); }}
         />
         <button onClick={() => { setSettingsMandant(selMandant); setView("settings"); }} style={{ ...btnSm(S.surface, S.muted), marginTop: 16 }}>⚙ Einstellungen für {selMandant.name}</button>
@@ -1049,10 +1139,12 @@ export default function Revisionsassistent({ user, onLogout }) {
         <SettingsScreen
           onBack={() => setView(selMandant ? "jahre" : "mandanten")}
           mandant={settingsMandant || selMandant}
-          onUpdate={updated => {
-            setMandanten(p => p.map(m => m.name === updated.name ? updated : m));
-            if (selMandant?.name === updated.name) setSelMandant(updated);
-            if (settingsMandant?.name === updated.name) setSettingsMandant(updated);
+          onUpdate={async (updated) => {
+            await updateMandant(updated);
+          }}
+          onInvite={async (email) => {
+            const m = settingsMandant || selMandant;
+            if (m) await inviteTeamMember(m.id, email);
           }}
         />
       </div>}

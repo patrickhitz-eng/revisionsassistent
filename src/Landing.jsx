@@ -134,7 +134,7 @@ export default function LandingPage({ onLogin }) {
                 fontSize: 15, fontFamily: "'IBM Plex Sans'", outline: "none", background: "white"
               }}
             />
-            <button onClick={() => { if (email.includes("@")) onLogin(email); else document.querySelector('input[placeholder="name@kanzlei.ch"]')?.focus(); }} style={{
+            <button onClick={() => { if (email.includes("@")) onLogin(email); }} style={{
               padding: "15px 32px",
               background: "linear-gradient(135deg, #7c3aed, #a855f7)",
               color: "white", border: "none", borderRadius: 10,
