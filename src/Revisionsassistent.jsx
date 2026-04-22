@@ -85,7 +85,7 @@ async function extractFromPdf(base64, mediaType) {
   const r = await fetch("/api/claude", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514", max_tokens: 4000,
+      model: "claude-sonnet-4-6", max_tokens: 4000,
       messages: [{ role: "user", content: [
         { type: "document", source: { type: "base64", media_type: mediaType, data: base64 } },
         { type: "text", text: `Analysiere diese Schweizer Jahresrechnung (Bilanz und Erfolgsrechnung). Antworte NUR mit JSON, ohne Backticks:
@@ -104,7 +104,7 @@ async function researchCompany(companyName, website) {
   const r = await fetch("/api/claude", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514", max_tokens: 3000,
+      model: "claude-sonnet-4-6", max_tokens: 3000,
       tools: [{ type: "web_search_20250305", name: "web_search" }],
       messages: [{ role: "user", content: `Du bist ein Schweizer Revisionsexperte und recherchierst Informationen über das Unternehmen "${companyName}"${website ? ` (Website: ${website})` : ""} für die Planung einer eingeschränkten Revision nach SER 2022.
 
@@ -153,7 +153,7 @@ async function assessRisks(companyName, understanding, financialData) {
   const r = await fetch("/api/claude", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514", max_tokens: 4000,
+      model: "claude-sonnet-4-6", max_tokens: 4000,
       messages: [{ role: "user", content: `Du bist ein Schweizer Revisionsexperte. Beurteile das inhärente Risiko für die eingeschränkte Revision von "${companyName}" gemäss SER 2022, Kapitel 3.3.
 
 Unternehmensverständnis: ${undInfo}
