@@ -169,7 +169,7 @@ async function assessRisks(companyName, understanding, financialData) {
   const r = await fetch("/api/claude", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6", max_tokens: 2000,
+      model: "claude-sonnet-4-6", max_tokens: 4000,
       messages: [{ role: "user", content: `Schweizer Revisionsexperte. Inhärentes Risiko für "${companyName}" nach SER 3.3.
 
 Verständnis: ${undInfo}
