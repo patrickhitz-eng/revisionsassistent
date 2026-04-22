@@ -104,11 +104,11 @@ async function researchCompany(companyName, website) {
   const r = await fetch("/api/claude", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6", max_tokens: 3000,
+      model: "claude-sonnet-4-6", max_tokens: 1500,
 
       messages: [{ role: "user", content: `Du bist ein Schweizer Revisionsexperte und recherchierst Informationen über das Unternehmen "${companyName}"${website ? ` (Website: ${website})` : ""} für die Planung einer eingeschränkten Revision nach SER 2022.
 
-Suche im Handelsregister (zefix.ch), auf der Firmenwebsite und weiteren öffentlichen Quellen. Antworte am Ende mit einem einzigen JSON-Block (ohne Backticks, ohne Text davor oder danach):
+Basierend auf deinem Wissen über Schweizer Unternehmen, fülle die folgenden Felder aus. Antworte NUR mit einem JSON-Block: (ohne Backticks, ohne Text davor oder danach):
 
 {
   "industry": "Branche und Geschäftsmodell in 1-2 Sätzen",
